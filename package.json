@@ -1,0 +1,30 @@
+{
+  "name": "fit-ai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfcstt/fit-ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/mfcstt/fit-ai/issues"
+  },
+  "homepage": "https://github.com/mfcstt/fit-ai#readme",
+  "devDependencies": {
+    "@types/node": "^25.3.2",
+    "eslint": "^10.0.2",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "tsx": "^4.21.0"
+  }
+}
