@@ -1,12 +1,14 @@
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import Fastify from "fastify";
-import { jsonSchemaTransform } from "fastify-type-provider-zod";
+import { jsonSchemaTransform, type ZodTypeProvider } from "fastify-type-provider-zod";
 import { auth } from "./lib/auth";
 import fastifyCors from "@fastify/cors";
+import fastifyApiReference from "@scalar/fastify-api-reference";
 
 export const app = Fastify();
 
+// Register Swagger/OpenAPI documentation
 await app.register(fastifySwagger, {
   openapi: {
     info: {
@@ -24,16 +26,44 @@ await app.register(fastifySwagger, {
   transform: jsonSchemaTransform
 })
 
-await app.register(fastifySwaggerUi, {
+// Register Swagger UI
+await app.register(fastifyApiReference, {
   routePrefix: "/docs",
-})
+  configuration: {
+    sources: [
+      {
+        title: "Fit AI API",
+        slug: "fit-ai-api",
+        url: "/swagger.json",
+      },
+      {
+        title: "Auth API",
+        slug: "auth-api",
+        url: "/api/auth/open-api/generate-schema",
+      },
+    ],
+  },
+});
 
+app.withTypeProvider<ZodTypeProvider>().route({
+  method: "GET",
+  url: "/swagger.json",
+  schema: {
+    hide: true,
+  },
+  handler: async () => {
+    return app.swagger();
+  },
+});
+
+
+// CORS configuration
 await app.register(fastifyCors, {
   origin: ['http://localhost:5173'],
   credentials: true,
 })
 
-// Register authentication endpoint
+// Authentication endpoint (BetterAuth)
 app.route({
   method: ["GET", "POST"],
   url: "/api/auth/*",
