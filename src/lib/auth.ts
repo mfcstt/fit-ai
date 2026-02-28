@@ -1,0 +1,27 @@
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../generated/prisma/client";
+import { env } from "../env";
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { openAPI } from "better-auth/plugins";
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({connectionString: env.DATABASE_URL})
+});
+
+export const auth = betterAuth({
+  trustedOrigins: ["http://localhost:5173"],
+  emailAndPassword: {
+    enabled: true,
+  },
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
+  plugins: [
+    openAPI(),
+  ]
+})
+
+
+
+
