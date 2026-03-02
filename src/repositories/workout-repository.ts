@@ -25,6 +25,17 @@ export interface StartWorkoutSessionDTO {
   workoutDayId: string;
 }
 
+export interface FindWorkoutSessionOwnerDTO {
+  workoutPlanId: string;
+  workoutDayId: string;
+  workoutSessionId: string;
+}
+
+export interface UpdateWorkoutSessionDTO {
+  workoutSessionId: string;
+  completedAt: Date;
+}
+
 export interface WorkoutRepository {
   create(data: CreateWorkoutPlanDTO): Promise<{ id: string }>;
   findActiveByUserId(userId: string): Promise<{ id: string } | null>;
@@ -35,4 +46,12 @@ export interface WorkoutRepository {
     workoutDayId: string,
   ): Promise<{ id: string } | null>;
   startWorkoutSession(data: StartWorkoutSessionDTO): Promise<{ id: string }>;
+  findWorkoutSessionOwner(
+    data: FindWorkoutSessionOwnerDTO,
+  ): Promise<{ userId: string } | null>;
+  updateWorkoutSession(data: UpdateWorkoutSessionDTO): Promise<{
+    id: string;
+    completedAt: Date;
+    startedAt: Date;
+  }>;
 }

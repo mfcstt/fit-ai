@@ -1,16 +1,21 @@
+import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { makeCreateWorkoutPlan } from "../use-cases/factories/make-create-workout-plan";
-import { makeStartWorkoutSession } from "../use-cases/factories/make-start-workout-session";
-import { auth } from "../lib/auth";
-import { fromNodeHeaders } from "better-auth/node";
+
 import { ConflictError, ForbiddenError, NotFoundError } from "../errors/error";
+import { auth } from "../lib/auth";
 import {
   ErrorSchema,
   StartWorkoutSessionParamsSchema,
   StartWorkoutSessionResponseSchema,
+  UpdateWorkoutSessionBodySchema,
+  UpdateWorkoutSessionParamsSchema,
+  UpdateWorkoutSessionResponseSchema,
   WorkoutPlanSchema,
 } from "../schema";
+import { makeCreateWorkoutPlan } from "../use-cases/factories/make-create-workout-plan";
+import { makeStartWorkoutSession } from "../use-cases/factories/make-start-workout-session";
+import { makeUpdateWorkoutSession } from "../use-cases/factories/make-update-workout-session";
 
 export async function workoutPlanRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -122,6 +127,70 @@ export async function workoutPlanRoutes(app: FastifyInstance) {
           return reply.status(409).send({
             error: error.message,
             code: "CONFLICT",
+          });
+        }
+
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/:workoutPlanId/days/:workoutDayId/sessions/:workoutSessionId",
+    schema: {
+      tags: ["Workout Sessions"],
+      summary: "Update a workout session",
+      params: UpdateWorkoutSessionParamsSchema,
+      body: UpdateWorkoutSessionBodySchema,
+      response: {
+        200: UpdateWorkoutSessionResponseSchema,
+        400: ErrorSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const updateWorkoutSession = makeUpdateWorkoutSession();
+
+      const session = await auth.api.getSession({
+        headers: fromNodeHeaders(request.headers),
+      });
+
+      if (!session) {
+        return reply.status(401).send({
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      try {
+        const result = await updateWorkoutSession.execute({
+          userId: session.user.id,
+          workoutPlanId: request.params.workoutPlanId,
+          workoutDayId: request.params.workoutDayId,
+          workoutSessionId: request.params.workoutSessionId,
+          completedAt: request.body.completedAt,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        if (error instanceof ForbiddenError) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
+        if (error instanceof NotFoundError) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "NOT_FOUND",
           });
         }
 

@@ -3,7 +3,9 @@ import { prisma } from "../../lib/auth";
 import type {
   CreateWorkoutPlanDTO,
   FindWorkoutDayOwnerDTO,
+  FindWorkoutSessionOwnerDTO,
   StartWorkoutSessionDTO,
+  UpdateWorkoutSessionDTO,
   WorkoutRepository,
 } from "../workout-repository";
 
@@ -89,5 +91,58 @@ export class PrismaWorkoutRepository implements WorkoutRepository {
     });
 
     return { id: workoutSession.id };
+  }
+
+  async findWorkoutSessionOwner(data: FindWorkoutSessionOwnerDTO) {
+    const workoutSession = await prisma.workoutSession.findFirst({
+      where: {
+        id: data.workoutSessionId,
+        workoutDayId: data.workoutDayId,
+        workoutDay: {
+          workoutPlanId: data.workoutPlanId,
+        },
+      },
+      select: {
+        workoutDay: {
+          select: {
+            workoutPlan: {
+              select: {
+                userId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!workoutSession) {
+      return null;
+    }
+
+    return {
+      userId: workoutSession.workoutDay.workoutPlan.userId,
+    };
+  }
+
+  async updateWorkoutSession(data: UpdateWorkoutSessionDTO) {
+    const workoutSession = await prisma.workoutSession.update({
+      where: {
+        id: data.workoutSessionId,
+      },
+      data: {
+        CompletedAt: data.completedAt,
+      },
+      select: {
+        id: true,
+        CompletedAt: true,
+        StartedAt: true,
+      },
+    });
+
+    return {
+      id: workoutSession.id,
+      completedAt: workoutSession.CompletedAt as Date,
+      startedAt: workoutSession.StartedAt,
+    };
   }
 }

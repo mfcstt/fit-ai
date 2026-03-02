@@ -1,4 +1,5 @@
 import z from "zod";
+
 import { WeekDay } from "../generated/prisma/browser";
 
 export const ErrorSchema = z.object({
@@ -36,4 +37,20 @@ export const StartWorkoutSessionParamsSchema = z.object({
 
 export const StartWorkoutSessionResponseSchema = z.object({
   userWorkoutSessionId: z.uuid(),
+});
+
+export const UpdateWorkoutSessionBodySchema = z.object({
+  completedAt: z.string().datetime(),
+});
+
+export const UpdateWorkoutSessionParamsSchema = z.object({
+  workoutPlanId: z.uuid(),
+  workoutDayId: z.uuid(),
+  workoutSessionId: z.uuid(),
+});
+
+export const UpdateWorkoutSessionResponseSchema = z.object({
+  id: z.uuid(),
+  completedAt: z.string().datetime(),
+  startedAt: z.string().datetime(),
 });
