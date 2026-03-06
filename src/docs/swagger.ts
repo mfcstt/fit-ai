@@ -2,6 +2,7 @@ import fastifySwagger from "@fastify/swagger";
 import fastifyApiReference from "@scalar/fastify-api-reference";
 import type { FastifyInstance } from "fastify";
 import { jsonSchemaTransform, type ZodTypeProvider } from "fastify-type-provider-zod";
+import { env } from "../env";
 
 export async function generateDocumentation(app: FastifyInstance) {
   await app.register(fastifySwagger, {
@@ -13,7 +14,7 @@ export async function generateDocumentation(app: FastifyInstance) {
       },
       servers: [
         {
-          url: "http://localhost:8080",
+          url: env.API_BASE_URL || "http://localhost:8080",
         },
       ],
     },
