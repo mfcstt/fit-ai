@@ -41,7 +41,7 @@ app.register(homeRoutes, { prefix: "/home" });
 app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 app.register(statsRoutes, { prefix: "/stats" });
 app.register(meRoutes, { prefix: "/me" });
-app.register(aiRoutes, { prefix: "/ai" });
+app.register(aiRoutes);
 
 // Authentication endpoint (BetterAuth)
 app.route({
