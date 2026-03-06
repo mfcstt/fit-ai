@@ -13,6 +13,7 @@ import { statsRoutes } from "./routes/stats.js";
 import { meRoutes } from "./routes/me.js";
 import { aiRoutes } from "./routes/ai.js";
 import { fastifyCors } from "@fastify/cors";
+import { env } from "./env.js";
 
 export const app = Fastify({
   logger: {
@@ -32,7 +33,7 @@ app.setSerializerCompiler(serializerCompiler);
 await generateDocumentation(app);
 
 await app.register(fastifyCors, {
-  origin: ["http://localhost:3000"],
+  origin: env.WEB_APP_BASE_URL,
   credentials: true,
 });
 
