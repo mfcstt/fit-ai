@@ -10,7 +10,7 @@ export const prisma = new PrismaClient({
 });
 
 export const auth = betterAuth({
-  baseURL: env.BETTER_AUTH_URL,
+  baseURL: env.API_BASE_URL,
   trustedOrigins: ["http://localhost:3000"],
   socialProviders: {
     google: {

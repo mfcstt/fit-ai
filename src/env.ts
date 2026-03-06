@@ -5,7 +5,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(8080),
   DATABASE_URL: z.string(),
   BETTER_AUTH_SECRET: z.string(),
-  BETTER_AUTH_URL: z.string(),
+  API_BASE_URL: z.string().default("http://localhost:8080"),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
   OPENAI_API_KEY: z.string(),
