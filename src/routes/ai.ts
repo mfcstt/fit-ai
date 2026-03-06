@@ -16,6 +16,7 @@ import { makeCreateWorkoutPlan } from "../use-cases/factories/make-create-workou
 import { makeGetUserTrainData } from "../use-cases/factories/make-get-user-train-data.js";
 import { makeListWorkoutPlans } from "../use-cases/factories/make-list-workout-plans.js";
 import { makeUpsertUserTrainData } from "../use-cases/factories/make-upsert-user-train-data.js";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 
 const aiSystemPrompt = `Você é um personal trainer virtual especialista em montar planos de treino.
 
@@ -60,17 +61,23 @@ coverImageUrl (obrigatório em todos os dias):
 - Dias de descanso usam imagem de superior.`;
 
 export const aiRoutes = async (app: FastifyInstance) => {
-  app.post("/ai", async (request, reply) => {
-    const session = await auth.api.getSession({
-      headers: fromNodeHeaders(request.headers),
-    });
-
-    if (!session) {
-      return reply.status(401).send({
-        error: "Unauthorized",
-        code: "UNAUTHORIZED",
+   app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/",
+    schema: {
+      tags: ["AI"],
+      summary: "Chat with AI personal trainer",
+    },
+    handler: async (request, reply) => {
+      const session = await auth.api.getSession({
+        headers: fromNodeHeaders(request.headers),
       });
-    }
+
+      if (!session) {
+        return reply.status(401).send({ error: "Unauthorized" });
+      }
+
+      const userId = session.user.id;
 
     const getUserTrainData = makeGetUserTrainData();
     const upsertUserTrainData = makeUpsertUserTrainData();
@@ -162,23 +169,9 @@ export const aiRoutes = async (app: FastifyInstance) => {
     });
     const response = result.toUIMessageStreamResponse();
 
-    reply.raw.writeHead(
-      response.status,
-      Object.fromEntries(response.headers.entries()),
-    );
-
-    const reader = response.body!.getReader();
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        reply.raw.write(value);
-      }
-    } finally {
-      reply.raw.end();
-    }
-
-    return reply;
+    reply.status(response.status);
+      response.headers.forEach((value, key) => reply.header(key, value));
+      return reply.send(response.body);
+    },
   });
 };
